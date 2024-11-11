@@ -1,0 +1,4 @@
+name = "LLROutputCleaner"
+uuid = "a6578ec9-e5ba-419d-b25f-68053db3bc00"
+authors = ["Fabian Zierler <fabian.zierler@a1.net>"]
+version = "0.1.0"
