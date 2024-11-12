@@ -42,10 +42,32 @@ function find_malformed_files_in_dir(dir)
             healthy = check_llr_files(file)
             if !healthy
                 push!(paths,file)
+                break
             end
         end
     end
     return paths
+end
+function find_healthy_ranges(start, finish)
+    # start with the first start of a run
+    ind_s0 = 1
+    ranges = UnitRange[]
+    while ind_s0 in eachindex(start)
+        s0 = start[ind_s0]
+        # find next entry in either start or finishes
+        ind_s = findfirst(x->x>s0,start)
+        ind_f = findfirst(x->x>s0,finish)
+        # if we find no further end of input files, then we are done 
+        isnothing(ind_f) && return
+        # if the next match is one that finishes then we probably have identified a healthy section of the output file
+        # (I am mostly assuming that we don't have issues where two runs have been writing to the output file simultaneously)
+        if isnothing(ind_s) || finish[ind_f] < start[ind_s]
+            f1 = finish[ind_f] 
+            push!(ranges,s0:f1)
+        end
+        ind_s0 = ind_s
+    end
+    return ranges
 end
 
 testfile = "/home/fabian/Documents/Physics/Data/DataCSD/CSD3/LLR_6x72_76/9/Rep_9/out_0"
@@ -53,12 +75,4 @@ testdir = "/home/fabian/Documents/Physics/Data/DataCSD/CSD3/"
 
 malformed_dirs = find_malformed_files_in_dir(testdir)
 start, finish, nlines = llr_start_and_end(malformed_dirs[1])
-
-function healthy_ranges(start, finish, nlines)
-
-end
-
-
-#start, finish, nlines = llr_start_and_end(testfile)
-#assert_llr_files(testfile)
-#check_llr_files(testfile)
+find_healthy_ranges(start, finish)
