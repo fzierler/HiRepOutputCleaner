@@ -15,6 +15,9 @@ function llr_start_and_end(file)
 end
 function check_llr_files(file)
     start, finish, nlines = llr_start_and_end(file)
+    check_llr_files(start, finish, nlines)
+end
+function check_llr_files(start, finish, nlines)
     isempty(start) && return false
     isempty(finish) && return false
     first(start)  == 1 || return false
@@ -42,7 +45,6 @@ function find_malformed_files_in_dir(dir)
             healthy = check_llr_files(file)
             if !healthy
                 push!(paths,file)
-                break
             end
         end
     end
@@ -58,7 +60,7 @@ function find_healthy_ranges(start, finish)
         ind_s = findfirst(x->x>s0,start)
         ind_f = findfirst(x->x>s0,finish)
         # if we find no further end of input files, then we are done 
-        isnothing(ind_f) && return
+        isnothing(ind_f) && return ranges
         # if the next match is one that finishes then we probably have identified a healthy section of the output file
         # (I am mostly assuming that we don't have issues where two runs have been writing to the output file simultaneously)
         if isnothing(ind_s) || finish[ind_f] < start[ind_s]
@@ -69,10 +71,23 @@ function find_healthy_ranges(start, finish)
     end
     return ranges
 end
+function find_malformed_files_and_healthy_ranges(dir)
+    paths_and_ranges = Dict()
+    for (root,dirs,files) in walkdir(dir)
+        if "out_0" ∈ files
+            file = joinpath(root,"out_0")
+            start, finish, nlines = llr_start_and_end(file)
+            healthy = check_llr_files(start, finish, nlines)
+            if !healthy
+                ranges = find_healthy_ranges(start, finish)
+                paths_and_ranges[file] = ranges
+            end
+        end
+    end
+    return paths_and_ranges
+end
 
 testfile = "/home/fabian/Documents/Physics/Data/DataCSD/CSD3/LLR_6x72_76/9/Rep_9/out_0"
 testdir = "/home/fabian/Documents/Physics/Data/DataCSD/CSD3/"
 
-malformed_dirs = find_malformed_files_in_dir(testdir)
-start, finish, nlines = llr_start_and_end(malformed_dirs[1])
-find_healthy_ranges(start, finish)
+dict = find_malformed_files_and_healthy_ranges(testdir)
