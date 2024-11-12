@@ -67,7 +67,7 @@ function find_malformed_files_and_healthy_ranges(dir,newdir)
                 old_file = readlines(file)
                 for r in ranges
                     for l in r
-                       write(io,old_file[l])
+                       write(io,old_file[l],'\n')
                     end
                 end
                 close(io)
