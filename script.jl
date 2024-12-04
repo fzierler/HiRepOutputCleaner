@@ -51,10 +51,12 @@ function find_healthy_ranges(start, finish)
 end
 function write_healthy_ranges(newfile,file,ranges)
     io = open(newfile,"w")
-    old_file = readlines(file)
-    for r in ranges
-        for l in r
-           write(io,old_file[l],'\n')
+    lines_to_copy = sort(vcat(ranges...))
+    next_line_ind = 1 
+    for (i,line) in enumerate(eachline(file))
+        if i == lines_to_copy[next_line_ind]
+           write(io,line,'\n')
+           next_line_ind +=1
         end
     end
     close(io)
@@ -86,9 +88,9 @@ function clean_llr_directory(dir,newdir)
 end
 
 # Clean LLR directory Scattering (rho-pi-pi) file
-testdir = "/home/fabian/Documents/Physics/Data/DataCSD/Archives/full/"
-newdir  = "/home/fabian/Documents/Physics/Data/DataCSD/Archives/cleaned/"
-dict = clean_llr_directory(testdir,newdir)
+#testdir = "/home/fabian/Documents/Physics/Data/DataCSD/Archives/full/"
+#newdir  = "/home/fabian/Documents/Physics/Data/DataCSD/Archives/cleaned/"
+#dict = clean_llr_directory(testdir,newdir)
 
 # Clean HiRep Scattering (rho-pi-pi) file
 file = "/home/fabian/Downloads/out_scattering_I1"
