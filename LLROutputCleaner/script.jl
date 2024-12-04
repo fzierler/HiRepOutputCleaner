@@ -1,4 +1,4 @@
-function llr_start_and_end(file)
+function hirep_start_and_end(file)
     start  = Int[]
     finish = Int[]
     nlines = 0
@@ -13,11 +13,11 @@ function llr_start_and_end(file)
     end
     return start, finish, nlines
 end
-function check_llr_files(file)
-    start, finish, nlines = llr_start_and_end(file)
-    check_llr_files(start, finish, nlines)
+function check_hirep_file(file)
+    start, finish, nlines = hirep_start_and_end(file)
+    check_hirep_file(start, finish, nlines)
 end
-function check_llr_files(start, finish, nlines)
+function check_hirep_file(start, finish, nlines)
     isempty(start) && return false
     isempty(finish) && return false
     first(start)  == 1 || return false
@@ -49,13 +49,28 @@ function find_healthy_ranges(start, finish)
     end
     return ranges
 end
-function find_malformed_files_and_healthy_ranges(dir,newdir)
+function write_healthy_ranges(newfile,file,ranges)
+    io = open(newfile,"w")
+    old_file = readlines(file)
+    for r in ranges
+        for l in r
+           write(io,old_file[l],'\n')
+        end
+    end
+    close(io)
+end
+function clean_hirep_file(file,newfile)
+    start, finish, nlines = hirep_start_and_end(file)
+    ranges = find_healthy_ranges(start, finish)
+    write_healthy_ranges(newfile,file,ranges)
+end
+function clean_llr_directory(dir,newdir)
     paths_and_ranges = Dict()
     for (root,dirs,files) in walkdir(dir)
         if "out_0" ∈ files
             file = joinpath(root,"out_0")
-            start, finish, nlines = llr_start_and_end(file)
-            healthy = check_llr_files(start, finish, nlines)
+            start, finish, nlines = hirep_start_and_end(file)
+            healthy = check_hirep_file(start, finish, nlines)
             newfile = joinpath(newdir,relpath(file,dir))
             ispath(dirname(newfile)) || mkpath(dirname(newfile))
             if healthy
@@ -63,20 +78,19 @@ function find_malformed_files_and_healthy_ranges(dir,newdir)
             else
                 ranges = find_healthy_ranges(start, finish)
                 paths_and_ranges[file] = ranges
-                io = open(newfile,"w")
-                old_file = readlines(file)
-                for r in ranges
-                    for l in r
-                       write(io,old_file[l],'\n')
-                    end
-                end
-                close(io)
+                write_healthy_ranges(newfile,file,ranges)
             end
         end
     end
     return paths_and_ranges
 end
 
+# Clean LLR directory Scattering (rho-pi-pi) file
 testdir = "/home/fabian/Documents/Physics/Data/DataCSD/Archives/full/"
 newdir  = "/home/fabian/Documents/Physics/Data/DataCSD/Archives/cleaned/"
-dict = find_malformed_files_and_healthy_ranges(testdir,newdir)
+dict = clean_llr_directory(testdir,newdir)
+
+# Clean HiRep Scattering (rho-pi-pi) file
+file = "/home/fabian/Downloads/out_scattering_I1"
+newfile = "/home/fabian/Downloads/out_scattering_I1_cleaned"
+clean_hirep_file(file,newfile)
