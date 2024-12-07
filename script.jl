@@ -57,6 +57,7 @@ function write_healthy_ranges(newfile,file,ranges)
         if i == lines_to_copy[next_line_ind]
            write(io,line,'\n')
            next_line_ind +=1
+           next_line_ind > length(lines_to_copy) && break
         end
     end
     close(io)
@@ -93,6 +94,6 @@ end
 #dict = clean_llr_directory(testdir,newdir)
 
 # Clean HiRep Scattering (rho-pi-pi) file
-file = "/home/fabian/Downloads/out_scattering_I1"
-newfile = "/home/fabian/Downloads/out_scattering_I1_cleaned"
+file    = "/home/fabian/Dokumente/Physics/Data/DataVSC/measurements/runsSp4/Lt48Ls16beta7.4m1-0.74m2-0.74/out/out_scattering_I1"
+newfile = "/home/fabian/Dokumente/Physics/Data/DataVSC/measurements/runsSp4/Lt48Ls16beta7.4m1-0.74m2-0.74/out/out_scattering_I1_cleaned"
 clean_hirep_file(file,newfile)
