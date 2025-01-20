@@ -50,9 +50,10 @@ function find_healthy_ranges(start, finish)
     return ranges
 end
 function write_healthy_ranges(newfile,file,ranges)
-    io = open(newfile,"w")
     lines_to_copy = sort(vcat(ranges...))
+    isempty(lines_to_copy) && return
     next_line_ind = 1 
+    io = open(newfile,"w")
     for (i,line) in enumerate(eachline(file))
         if i == lines_to_copy[next_line_ind]
            write(io,line,'\n')
@@ -97,3 +98,15 @@ end
 file    = "/home/fabian/Dokumente/Physics/Data/DataVSC/measurements/runsSp4/Lt48Ls16beta7.4m1-0.74m2-0.74/out/out_scattering_I1"
 newfile = "/home/fabian/Dokumente/Physics/Data/DataVSC/measurements/runsSp4/Lt48Ls16beta7.4m1-0.74m2-0.74/out/out_scattering_I1_cleaned"
 clean_hirep_file(file,newfile)
+
+#file    = "/home/fabian/Documents/Physics/Data/DataVSC/measurements/runsSp4/Lt36Ls24beta7.05m1-0.867m2-0.867/out/out_tmp"
+#newfile = "/home/fabian/Documents/Physics/Data/DataVSC/measurements/runsSp4/Lt36Ls24beta7.05m1-0.867m2-0.867/out/out_scattering_I1"
+#clean_hirep_file(file,newfile)
+
+indir  = "/home/fabian/Downloads/test"
+outdir = "/home/fabian/Downloads/cleaned"
+isdir(outdir) || mkdir(outdir)
+for file in readdir(indir,join=true)
+    newfile = joinpath(outdir,basename(file))
+    clean_hirep_file(file,newfile)    
+end
