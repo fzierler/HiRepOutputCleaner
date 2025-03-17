@@ -14,6 +14,15 @@ function hirep_start_and_end(file)
     end
     return start, finish, nlines
 end
+function hirep_checkpoints(file,pattern)
+    checkpoint  = Int[]
+    for (i,line) in enumerate(eachline(file))
+        if occursin(pattern,line)
+            push!(checkpoint,i)
+        end
+    end
+    return checkpoint
+end
 function check_hirep_file(file)
     start, finish, nlines = hirep_start_and_end(file)
     check_hirep_file(start, finish, nlines)
@@ -50,6 +59,59 @@ function find_healthy_ranges(start, finish)
     end
     return ranges
 end
+# Determine all ranges that are not deemed healthy
+# The idea is to provide an optional kwarg that can identify checkpoints in the problemetic ranges.
+# We can then include the problematic ranges up to that checkpoint and only discard the final part.
+function split_problematic_ranges(ranges,start)
+    split_ranges = UnitRange[]
+    for r in ranges
+        inds = findall(x -> x in r, start)
+        ind0 = first(r)
+        for s in start[inds]
+            if s <= ind0
+                continue
+            else
+                push!(split_ranges,ind0:s-1)
+                ind0 = s
+            end
+        end
+        # now deal with the last range
+        push!(split_ranges,ind0:last(r))
+    end
+    return split_ranges
+end
+function find_problematic_ranges(file)
+    start, finish, nlines = hirep_start_and_end(file)
+    ranges = find_healthy_ranges(start, finish)
+    problematic_ranges=UnitRange[]
+    if first(ranges[1]) != 1
+        push!(problematic_ranges,1:first(ranges[i])-1)
+    end
+    for i in eachindex(ranges[1:end-1])
+        if last(ranges[i]) + 1 == first(ranges[i+1])
+            continue
+        else
+            push!(problematic_ranges, last(ranges[i])+1:first(ranges[i+1])-1)
+        end
+    end
+    if last(ranges[end]) != nlines
+        push!(problematic_ranges,last(ranges[end])+1:nlines)
+    end
+    # Up to now we have only identified the ranges based
+    # It could still be the case that there are actually mor
+    split = split_problematic_ranges(problematic_ranges,start)
+    @show problematic_ranges
+    @show split
+    return split
+end
+function checkpointed_problematic_ranges(problematic_ranges, checkpoints)
+    checkpointed_ranges = UnitRange[]
+    for range in problematic_ranges
+        ind = findlast(x -> x in range,checkpoints)
+        push!(checkpointed_ranges,first(range):checkpoints[ind])
+    end
+    return checkpointed_ranges
+end
 function write_healthy_ranges(newfile,file,ranges)
     lines_to_copy = sort(vcat(ranges...))
     isempty(lines_to_copy) && return
@@ -64,9 +126,15 @@ function write_healthy_ranges(newfile,file,ranges)
     end
     close(io)
 end
-function clean_hirep_file(file,newfile)
+function clean_hirep_file(file,newfile;checkpoint_pattern=nothing)
     start, finish, nlines = hirep_start_and_end(file)
     ranges = find_healthy_ranges(start, finish)
+    if !isnothing(checkpoint_pattern)
+        checkpoints = hirep_checkpoints(file,checkpoint_pattern)
+        bad_ranges  = find_problematic_ranges(file)
+        ckp_ranges  = checkpointed_problematic_ranges(bad_ranges, checkpoints)
+        ranges = sort(vcat(ranges,ckp_ranges))
+    end
     write_healthy_ranges(newfile,file,ranges)
 end
 function clean_llr_directory(dir,newdir)
