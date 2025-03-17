@@ -83,6 +83,9 @@ end
 function find_problematic_ranges(file)
     start, finish, nlines = hirep_start_and_end(file)
     ranges = find_healthy_ranges(start, finish)
+    if isempty(ranges)
+        return [1:nlines]
+    end
     problematic_ranges=UnitRange[]
     if first(ranges[1]) != 1
         push!(problematic_ranges,1:first(ranges[i])-1)
@@ -108,7 +111,9 @@ function checkpointed_problematic_ranges(problematic_ranges, checkpoints)
     checkpointed_ranges = UnitRange[]
     for range in problematic_ranges
         ind = findlast(x -> x in range,checkpoints)
-        push!(checkpointed_ranges,first(range):checkpoints[ind])
+        if !isnothing(ind)
+            push!(checkpointed_ranges,first(range):checkpoints[ind])
+        end
     end
     return checkpointed_ranges
 end
@@ -137,7 +142,7 @@ function clean_hirep_file(file,newfile;checkpoint_pattern=nothing)
     end
     write_healthy_ranges(newfile,file,ranges)
 end
-function clean_llr_directory(dir,newdir)
+function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing)
     paths_and_ranges = Dict()
     for (root,dirs,files) in walkdir(dir)
         if "out_0" ∈ files
@@ -150,8 +155,14 @@ function clean_llr_directory(dir,newdir)
                 cp(file,newfile)
             else
                 ranges = find_healthy_ranges(start, finish)
-                paths_and_ranges[file] = ranges
+                if !isnothing(checkpoint_pattern)
+                    checkpoints = hirep_checkpoints(file,checkpoint_pattern)
+                    bad_ranges  = find_problematic_ranges(file)
+                    ckp_ranges  = checkpointed_problematic_ranges(bad_ranges, checkpoints)
+                    ranges = sort(vcat(ranges,ckp_ranges))
+                end
                 @warn "file $file has section that terminated prematurely" 
+                paths_and_ranges[file] = ranges
                 write_healthy_ranges(newfile,file,ranges)
             end
         end
