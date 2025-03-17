@@ -161,7 +161,7 @@ function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing)
                     ckp_ranges  = checkpointed_problematic_ranges(bad_ranges, checkpoints)
                     ranges = sort(vcat(ranges,ckp_ranges))
                 end
-                @warn "file $file has section that terminated prematurely" 
+                @warn "file $file has sections that terminated prematurely" 
                 paths_and_ranges[file] = ranges
                 write_healthy_ranges(newfile,file,ranges)
             end
