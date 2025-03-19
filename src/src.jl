@@ -88,7 +88,7 @@ function find_problematic_ranges(file)
     end
     problematic_ranges=UnitRange[]
     if first(ranges[1]) != 1
-        push!(problematic_ranges,1:first(ranges[i])-1)
+        push!(problematic_ranges,1:first(ranges[1])-1)
     end
     for i in eachindex(ranges[1:end-1])
         if last(ranges[i]) + 1 == first(ranges[i+1])
@@ -103,8 +103,6 @@ function find_problematic_ranges(file)
     # Up to now we have only identified the ranges based
     # It could still be the case that there are actually mor
     split = split_problematic_ranges(problematic_ranges,start)
-    @show problematic_ranges
-    @show split
     return split
 end
 function checkpointed_problematic_ranges(problematic_ranges, checkpoints)
