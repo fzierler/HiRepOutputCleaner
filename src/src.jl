@@ -140,7 +140,7 @@ function clean_hirep_file(file,newfile;checkpoint_pattern=nothing)
     end
     write_healthy_ranges(newfile,file,ranges)
 end
-function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing)
+function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing)
     paths_and_ranges = Dict()
     for (root,dirs,files) in walkdir(dir)
         if "out_0" ∈ files
@@ -158,6 +158,9 @@ function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing)
                     bad_ranges  = find_problematic_ranges(file)
                     ckp_ranges  = checkpointed_problematic_ranges(bad_ranges, checkpoints)
                     ranges = sort(vcat(ranges,ckp_ranges))
+                end
+                if !isnothing(last_ranges)
+                    ranges = ranges[end-last_ranges:end]
                 end
                 @warn "file $file has sections that terminated prematurely" 
                 paths_and_ranges[file] = ranges
