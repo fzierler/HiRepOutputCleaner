@@ -83,22 +83,23 @@ end
 function find_problematic_ranges(file)
     start, finish, nlines = hirep_start_and_end(file)
     ranges = find_healthy_ranges(start, finish)
-    if isempty(ranges)
-        return [1:nlines]
-    end
     problematic_ranges=UnitRange[]
-    if first(ranges[1]) != 1
-        push!(problematic_ranges,1:first(ranges[1])-1)
-    end
-    for i in eachindex(ranges[1:end-1])
-        if last(ranges[i]) + 1 == first(ranges[i+1])
-            continue
-        else
-            push!(problematic_ranges, last(ranges[i])+1:first(ranges[i+1])-1)
+    if isempty(ranges)
+        push!(problematic_ranges,1:nlines)
+    else
+        if first(ranges[1]) != 1
+            push!(problematic_ranges,1:first(ranges[1])-1)
         end
-    end
-    if last(ranges[end]) != nlines
-        push!(problematic_ranges,last(ranges[end])+1:nlines)
+        for i in eachindex(ranges[1:end-1])
+            if last(ranges[i]) + 1 == first(ranges[i+1])
+                continue
+            else
+                push!(problematic_ranges, last(ranges[i])+1:first(ranges[i+1])-1)
+            end
+        end
+        if last(ranges[end]) != nlines
+            push!(problematic_ranges,last(ranges[end])+1:nlines)
+        end
     end
     # Up to now we have only identified the ranges based
     # It could still be the case that there are actually mor
