@@ -173,3 +173,31 @@ function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=n
     end
     return paths_and_ranges
 end
+function force_clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing, warn=true)
+    paths_and_ranges = Dict()
+    for (root,dirs,files) in walkdir(dir)
+        if "out_0" ∈ files
+            file = joinpath(root,"out_0")
+            start, finish, nlines = hirep_start_and_end(file)
+            healthy = check_hirep_file(start, finish, nlines)
+            newfile = joinpath(newdir,relpath(file,dir))
+            ispath(dirname(newfile)) || mkpath(dirname(newfile))
+            ranges = find_healthy_ranges(start, finish)
+            if !isnothing(checkpoint_pattern)
+                checkpoints = hirep_checkpoints(file,checkpoint_pattern)
+                bad_ranges  = find_problematic_ranges(file)
+                ckp_ranges  = checkpointed_problematic_ranges(bad_ranges, checkpoints)
+                ranges = sort(vcat(ranges,ckp_ranges))
+            end
+            if !isnothing(last_ranges)
+                ranges = ranges[end-last_ranges:end]
+            end
+            if warn && !healthy 
+                @warn "file $file has sections that terminated prematurely" 
+            end
+            paths_and_ranges[file] = ranges
+            write_healthy_ranges(newfile,file,ranges)
+        end
+    end
+    return paths_and_ranges
+end
