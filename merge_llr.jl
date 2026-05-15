@@ -38,7 +38,7 @@ function replica_id_from_file(file)
     return only(unique(replica_ids))
 end
 
-function main(dir,newdir;dry_run=true)
+function main(dir,newdir)
 
     # find all directories in overarching directory
     folders = filter(isdir,readdir(dir,join=true))
@@ -94,13 +94,17 @@ function main(dir,newdir;dry_run=true)
         
         # Append the file 
         new_file = replace(missing_replica_file,dir=>newdir)
-        io = open(new_file,"a")
+        new_out_file = replace(file2append,dir=>newdir)
+        # empty the file in the new copy to indicate that we will have already
+        # moced the contents to its intended file
+        rm(new_out_file)
+        touch(new_out_file)
+
+        io = open(new_file,"a+")
         for l in eachline(file2append)
-            write(io,l)
+            println(io,l)
         end
         close(io)
-        rm(file2append)
-        touch(file2append)
     end
 end
 
