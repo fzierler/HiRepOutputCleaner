@@ -45,9 +45,6 @@ function main(dir,newdir)
     # filter out only directories of the repeats 
     repeats = filter(f -> startswith(basename(f),r"[0-9]+"),folders)
 
-    # make a copy of the old data which will be used morked on
-    cp(dir,newdir)
-
     for repeat in repeats
 
         # find the files that contain the stray data that is not saved 
@@ -91,6 +88,9 @@ function main(dir,newdir)
         missing_replica_file = replica_files[replica_index]
         missing_replica_id_alt = match(r"Rep_(?<replica>[0-9]+)",missing_replica_file)["replica"] 
         @assert missing_replica_id_alt == missing_replica
+
+        # make a copy of the old data which will be used morked on
+        cp(joinpath(dir,repeat),joinpath(newdir,repeat))
 
         # Append the file 
         io = open(missing_replica_file,"a")
