@@ -38,13 +38,15 @@ function replica_id_from_file(file)
     return only(unique(replica_ids))
 end
 
-function main()
-    dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_7x40_84_Run_3"
+function main(dir,newdir)
 
     # find all directories in overarching directory
     folders = filter(isdir,readdir(dir,join=true))
     # filter out only directories of the repeats 
     repeats = filter(f -> startswith(basename(f),r"[0-9]+"),folders)
+
+    # make a copy of the old data which will be used morked on
+    cp(dir,newdir)
 
     for repeat in repeats
 
@@ -69,11 +71,10 @@ function main()
         # make sure that the file contains only data from exactly on run
         # then find the corresponding replica from the file
         @assert count_runs(file2append) == 1
-        @show replica_id_from_file(file2append)
+        missing_replica = replica_id_from_file(file2append)
+        @show missing_replica
 
-        # assert that the identified replica has one fewer run than all other
-        # replicas. this essentially is an idenpendent check that we have 
-        # identified the correct replica.
+        # indentify all replicas that are present
         is_replica(dir) = isdir(dir) && endswith(dir,r"Rep_[0-9]+")
         replicas = filter(is_replica ,readdir(repeat,join=true))
         replica_files = joinpath.(replicas,Ref("out_0"))
@@ -81,11 +82,27 @@ function main()
         # check that all files are present and that they match 
         @assert all(isfile,replica_files)
 
-        replica_ids = replica_id_from_file.(replica_files)
-        println.(replica_ids)
+        # assert that the identified replica has one fewer run than all other
+        # replicas. this essentially is an idenpendent check that we have 
+        # identified the correct replica.        
+        replica_run_counts = count_runs.(replica_files)
+        nruns = maximum(replica_run_counts)
+        replica_index = only(findall(isequal(nruns-1),replica_run_counts))
+        missing_replica_file = replica_files[replica_index]
+        missing_replica_id_alt = match(r"Rep_(?<replica>[0-9]+)",missing_replica_file)["replica"] 
+        @assert missing_replica_id_alt == missing_replica
 
-
-
+        # Append the file 
+        io = open(missing_replica_file,"a")
+        for l in eachline(file2append)
+            write(io,l)
+        end
+        close(io)
+        rm(file2append)
+        touch(file2append)
     end
 end
-main()
+
+dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_7x40_84_Run_3"
+newdir = "/home/fabian/Downloads/LLR_su4_7x40_84_Run_3_cleaned"
+main(dir, newdir)
