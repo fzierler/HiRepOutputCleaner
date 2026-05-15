@@ -1,6 +1,6 @@
 using Pkg; Pkg.activate(".")
 using HiRepOutputCleaner
 
-file_in  = "/home/fabian/Documents/Physics/Data/DataVSC/measurements/runsSp4/Lt36Ls36beta7.05m1-0.867m2-0.867/out/out_scattering_I1_run1" 
-file_out = "/home/fabian/Documents/Physics/Data/DataVSC/measurements/runsSp4/Lt36Ls36beta7.05m1-0.867m2-0.867/out/out_scattering_I1_run1_cleaned"     
-clean_hirep_file(file_in,file_out;checkpoint_pattern="analysed")
+file_in  = "/home/fabian/Documents/Physics/Analysis/fundamental_Wilson_2025/raw_data/gradient_flow/Lt32Ls16beta6.9mas-0.89FUN/topology/out/out_flow" 
+file_out = "/home/fabian/Documents/Physics/Analysis/fundamental_Wilson_2025/raw_data/gradient_flow/Lt32Ls16beta6.9mas-0.89FUN/topology/out/out_flow_clean"     
+clean_hirep_file(file_in,file_out)

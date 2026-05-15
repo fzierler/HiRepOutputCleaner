@@ -23,9 +23,9 @@ function truncate_llr_directory(dir,newdir,runs;dry_run=false)
     end
 end
 
-dir    = "/home/fabian/Documents/Physics/Data/DataDiaL/LLR_DiaL3/LLR_5x80_64"
-newdir = "/home/fabian/Downloads/LLR_5x80_64/3/"
-truncdir = "/home/fabian/Downloads/LLR_5x80_64_trunc/3/"
-#clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing)
-#HiRepOutputCleaner.force_clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing)
-truncate_llr_directory(newdir,truncdir,16,dry_run=false)
+dir      = "/home/fabian/Documents/Physics/Data/DataDiaL/LLR_SU4/LLR_su4_5x32_96_Run_2/47"
+newdir   = "/home/fabian/Downloads/LLR_su4_5x32_96_Run_2/47"
+truncdir = "/home/fabian/Downloads/LLR_su4_5x32_96_Run_2/47"
+clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing)
+HiRepOutputCleaner.force_clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing)
+truncate_llr_directory(newdir,truncdir,1,dry_run=false)

@@ -1,0 +1,10 @@
+# This file is machine-generated - editing it directly is not advised
+
+julia_version = "1.12.4"
+manifest_format = "2.0"
+project_hash = "d9262548bfe496d2833c700532dbd209eea6cb64"
+
+[[deps.HiRepOutputCleaner]]
+path = "."
+uuid = "a6578ec9-e5ba-419d-b25f-68053db3bc00"
+version = "0.1.0"
