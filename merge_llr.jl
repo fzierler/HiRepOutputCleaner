@@ -45,6 +45,9 @@ function main(dir,newdir;dry_run=true)
     # filter out only directories of the repeats 
     repeats = filter(f -> startswith(basename(f),r"[0-9]+"),folders)
 
+    # make a copy of the old data which
+    cp(dir,newdir)
+
     for repeat in repeats
 
         # find the files that contain the stray data that is not saved 
@@ -88,14 +91,10 @@ function main(dir,newdir;dry_run=true)
         missing_replica_file = replica_files[replica_index]
         missing_replica_id_alt = match(r"Rep_(?<replica>[0-9]+)",missing_replica_file)["replica"] 
         @assert missing_replica_id_alt == missing_replica
-
-        # make a copy of the old data which will be used morked on
-        ispath(newdir) || mkpath(newdir)
-        cp(joinpath(dir,basename(repeat)),joinpath(newdir,basename(repeat)))
-        missing_replica_file_new = replace(missing_replica_file,dir=>newdir)
-
+        
         # Append the file 
-        io = open(missing_replica_file_new,"a")
+        new_file = replace(missing_replica_file,dir=>newdir)
+        io = open(new_file,"a")
         for l in eachline(file2append)
             write(io,l)
         end
@@ -109,6 +108,10 @@ dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_7x40_
 newdir = "/home/fabian/Downloads/LLR_su4_7x40_84_Run_3_cleaned"
 main(dir, newdir)
 
-#dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_5x32_84_Run_1"
-#newdir = "/home/fabian/Downloads/LLR_su4_5x32_84_Run_1_cleaned"
-#main(dir, newdir)
+dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_6x32_84_Run_2"
+newdir = "/home/fabian/Downloads/LLR_su4_6x32_84_Run_2_cleaned"
+main(dir, newdir)
+
+dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_5x32_84_Run_1"
+newdir = "/home/fabian/Downloads/LLR_su4_5x32_84_Run_1_cleaned"
+main(dir, newdir)
