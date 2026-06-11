@@ -141,7 +141,17 @@ function clean_hirep_file(file,newfile;checkpoint_pattern=nothing)
     end
     write_healthy_ranges(newfile,file,ranges)
 end
-function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing, warn=true)
+function _copy_extra_files(dir,newdir,root,files,extra_pattern)
+    for f in files 
+        if occursin(extra_pattern,f)
+            oldfile = joinpath(root,f)
+            newfile = joinpath(newdir, relpath(joinpath(root,f),dir))
+            ispath(dirname(newfile)) || mkpath(dirname(newfile))
+            cp(oldfile,newfile)
+        end
+    end
+end
+function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing, warn=true, extra_files=false, extra_pattern=nothing)
     paths_and_ranges = Dict()
     for (root,dirs,files) in walkdir(dir)
         if "out_0" ∈ files
@@ -170,10 +180,16 @@ function clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=n
                 write_healthy_ranges(newfile,file,ranges)
             end
         end
+        # copy over extra files that contain a pattern
+        # this is used to copy over .out files that can contain data that has 
+        # not been properly written into the "out_0" file.
+        if extra_files 
+            _copy_extra_files(dir,newdir,root,files,extra_pattern)
+        end
     end
     return paths_and_ranges
 end
-function force_clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing, warn=true)
+function force_clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing, warn=true, extra_files=false, extra_pattern=nothing)
     paths_and_ranges = Dict()
     for (root,dirs,files) in walkdir(dir)
         if "out_0" ∈ files
@@ -197,6 +213,12 @@ function force_clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ra
             end
             paths_and_ranges[file] = ranges
             write_healthy_ranges(newfile,file,ranges)
+        end
+        # copy over extra files that contain a pattern
+        # this is used to copy over .out files that can contain data that has 
+        # not been properly written into the "out_0" file.
+        if extra_files 
+            _copy_extra_files(dir,newdir,root,files,extra_pattern)
         end
     end
     return paths_and_ranges
