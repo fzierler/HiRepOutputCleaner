@@ -70,7 +70,14 @@ function merge_llr(dir,newdir)
         
         # make sure that the file contains only data from exactly on run
         # then find the corresponding replica from the file
-        @assert count_runs(file2append) == 1
+        if count_runs(file2append) > 1
+            @warn "data from more than one replica present in repeat $repeat \n skipping repeat an dropping file, check manually"
+            # empty the file in the new copy to indicate that we have considered it
+            new_out_file = replace(file2append,dir=>newdir)
+            rm(new_out_file)
+            touch(new_out_file)
+            continue
+        end
         missing_replica = replica_id_from_file(file2append)
         @show missing_replica
 

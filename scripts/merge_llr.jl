@@ -1,14 +1,16 @@
 using Pkg; Pkg.activate(".")
 using HiRepOutputCleaner
 
-dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_7x40_84_Run_3"
-newdir = "/home/fabian/Downloads/LLR_su4_7x40_84_Run_3_cleaned"
-clean_llr_directory(dir,newdir;checkpoint_pattern=nothing,last_ranges=nothing,extra_files=true, extra_pattern=r"(\.err|\.out)")
+names = [
+    "LLR_su4_7x40_84_Run_3",
+    "LLR_su4_6x32_84_Run_2",
+    "LLR_su4_5x32_84_Run_1",
+]
 
-#dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_6x32_84_Run_2"
-#newdir = "/home/fabian/Downloads/LLR_su4_6x32_84_Run_2_cleaned"
-#merge_llr(dir, newdir)
-#
-#dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/LLR_su4_5x32_84_Run_1"
-#newdir = "/home/fabian/Downloads/LLR_su4_5x32_84_Run_1_cleaned"
-#merge_llr(dir, newdir)
+for name in names
+    dir = "/home/fabian/Documents/Physics/Data/DataMareNostrum/LLR_SU4/$(name)"
+    cleandir = "/home/fabian/Downloads/$(name)_cleaned"
+    mergedir = "/home/fabian/Downloads/$(name)_merged"
+    clean_llr_directory(dir,cleandir;checkpoint_pattern=nothing,last_ranges=nothing,warn=false,extra_files=true, extra_pattern=r"(\.err|\.out)")
+    merge_llr(cleandir, mergedir)
+end
