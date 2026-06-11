@@ -4,7 +4,7 @@ function hirep_start_and_end(file)
     finish = Int[]
     nlines = 0
     for (i,line) in enumerate(eachline(file))
-        if startswith(line,"[SYSTEM][0]Gauge group:")
+        if contains(line,"[SYSTEM][0]Gauge group:")
             push!(start,i)
         end
         if startswith(line,"[SYSTEM][0]Process finalized.")

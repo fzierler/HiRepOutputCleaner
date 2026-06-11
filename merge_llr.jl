@@ -39,7 +39,7 @@ function replica_id_from_file(file)
 end
 
 function main(dir,newdir)
-
+    @show dir
     # find all directories in overarching directory
     folders = filter(isdir,readdir(dir,join=true))
     # filter out only directories of the repeats 
