@@ -123,6 +123,12 @@ function write_healthy_ranges(newfile,file,ranges)
     io = open(newfile,"w")
     for (i,line) in enumerate(eachline(file))
         if i == lines_to_copy[next_line_ind]
+           # Remove potentially garbage created by earlier run that 
+           # did not end with a new line 
+           if contains(line,"[SYSTEM][0]Gauge group:")
+               ind_start = first(findfirst("[SYSTEM][0]Gauge group:",line))
+               line = line[ind_start:end]
+           end
            write(io,line,'\n')
            next_line_ind +=1
            next_line_ind > length(lines_to_copy) && break
